@@ -170,7 +170,7 @@ class AprioriCalculation
              System.out.print("\nInput configuration: "+maxItemID+" items, "+numTransactions+" transactions, ");
              System.out.println("minsup = "+minSup+"%");
              System.out.println();
-             minSup/=100.0;
+             //minSup/=100.0;
             
             /*
             oneVal = new String[maxItemID];
