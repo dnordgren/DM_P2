@@ -294,7 +294,7 @@ class AprioriCalculation
 
         StringTokenizer st, stFile; //tokenizer for candidate and transaction
         boolean match; //whether the transaction has all the items in an itemset
-        boolean trans[] = new boolean[maxItemID]; //array to hold a transaction so that can be checked
+        boolean trans[] = new boolean[maxItemID+1]; //array to hold a transaction so that can be checked
         int count[] = new int[candidates.size()]; //the number of successful matches
 
         try
@@ -332,14 +332,17 @@ class AprioriCalculation
                         //check each item in the itemset to see if it is present in the transaction
                         while(st.hasMoreTokens())
                         {
-                            match = (trans[Integer.valueOf(st.nextToken())-1]);//Sawyer is wary
+                            match = (trans[Integer.valueOf(st.nextToken())]);
                             if(!match) //if it is not present in the transaction stop checking
                                 break;
                         }
                         if(match) //if at this point it is a match, increase the count
                             count[c]++;
                     }
-
+                    for(int k=0; k<maxItemID; k++)
+                    {
+                        trans[k] = false;
+                    }
                 }
                 for(int i=0; i<candidates.size(); i++)
                 {
