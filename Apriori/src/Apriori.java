@@ -1,10 +1,6 @@
 
 /**
 *
-* @author Nathan Magnus, under the supervision of Howard Hamilton
-* Copyright: University of Regina, Nathan Magnus and Su Yibin, June 2009.
-* No reproduction in whole or part without maintaining this copyright notice
-* and imposing this condition on any subsequent users.
 *
 * File:
 * Input files needed:

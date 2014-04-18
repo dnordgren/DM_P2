@@ -14,13 +14,16 @@ import java.util.Vector;
 *****************************************************************************/
 class AprioriCalculation
 {
-    Vector<String> candidates=new Vector<String>(); //the current candidates
+    //?current basket
+    Vector<String> candidates=new Vector<String>(); //the current candidates 
     String configFile="config.txt"; //configuration file
     String transaFile="transa.txt"; //transaction file
     String outputFile="apriori-output.txt";//output file
-    int numItems; //number of items per transaction
+    //int numItems; //number of items per transaction
+    int maxItemID;
     int numTransactions; //number of transactions
     double minSup; //minimum support for a frequent itemset
+    //?what is this?
     String oneVal[]; //array of value per column that will be treated as a '1'
     String itemSep = " "; //the separator value for items in the database
 
@@ -32,10 +35,11 @@ class AprioriCalculation
      *************************************************************************/
     public void aprioriProcess()
     {
+        //?need?
         Date d; //date object for timing purposes
         long start, end; //start and end time
         int itemsetNumber=0; //the current itemset being looked at
-        //get config
+        
         getConfig();
 
         System.out.println("Apriori algorithm has started.\n");
@@ -71,6 +75,7 @@ class AprioriCalculation
         System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
     }
 
+    //? readline method
     /************************************************************************
      * Method Name  : getInput
      * Purpose      : get user input from System.in
@@ -106,9 +111,10 @@ class AprioriCalculation
     {
         FileWriter fw;
         BufferedWriter file_out;
-
+        /*
         String input="";
         //ask if want to change the config
+        //? console output for settings -remove-
         System.out.println("Default Configuration: ");
         System.out.println("\tRegular transaction file with '" + itemSep + "' item separator.");
         System.out.println("\tConfig File: " + configFile);
@@ -118,6 +124,7 @@ class AprioriCalculation
         System.out.print("or any other key to continue.  ");
         input=getInput();
 
+        //?change config files -remove-
         if(input.compareToIgnoreCase("c")==0)
         {
             System.out.print("Enter new transaction filename (return for '"+transaFile+"'): ");
@@ -143,14 +150,15 @@ class AprioriCalculation
                 itemSep=input;
 
 
-        }
+        }*/
 
+        //? read config files
         try
         {
              FileInputStream file_in = new FileInputStream(configFile);
              BufferedReader data_in = new BufferedReader(new InputStreamReader(file_in));
              //number of items
-             numItems=Integer.valueOf(data_in.readLine()).intValue();
+             maxItemID=Integer.valueOf(data_in.readLine()).intValue();
 
              //number of transactions
              numTransactions=Integer.valueOf(data_in.readLine()).intValue();
@@ -159,12 +167,15 @@ class AprioriCalculation
              minSup=(Double.valueOf(data_in.readLine()).doubleValue());
 
              //output config info to the user
-             System.out.print("\nInput configuration: "+numItems+" items, "+numTransactions+" transactions, ");
+             System.out.print("\nInput configuration: "+maxItemID+" items, "+numTransactions+" transactions, ");
              System.out.println("minsup = "+minSup+"%");
              System.out.println();
              minSup/=100.0;
-
-            oneVal = new String[numItems];
+            
+            /*
+            oneVal = new String[maxItemID];
+            
+            //? change the column labels to indicate what value a one actually represents
             System.out.print("Enter 'y' to change the value each row recognizes as a '1':");
             if(getInput().compareToIgnoreCase("y")==0)
             {
@@ -174,16 +185,18 @@ class AprioriCalculation
                     oneVal[i] = getInput();
                 }
             }
+            
+            //?otherwise just let 1 for every column is good enough
             else
                 for(int i=0; i<oneVal.length; i++)
                     oneVal[i]="1";
-
+            */
             //create the output file
             fw= new FileWriter(outputFile);
             file_out = new BufferedWriter(fw);
             //put the number of transactions into the output file
             file_out.write(numTransactions + "\n");
-            file_out.write(numItems + "\n******\n");
+            file_out.write(maxItemID + "\n******\n");
             file_out.close();
         }
         //if there is an error, print the message
@@ -209,7 +222,7 @@ class AprioriCalculation
         //if its the first set, candidates are just the numbers
         if(n==1)
         {
-            for(int i=1; i<=numItems; i++)
+            for(int i=0; i<=maxItemID; i++)
             {
                 tempCandidates.add(Integer.toString(i));
             }
@@ -237,7 +250,7 @@ class AprioriCalculation
                 //compare to the next itemset
                 for(int j=i+1; j<candidates.size(); j++)
                 {
-                    //create the strigns
+                    //create the strings
                     str1 = new String();
                     str2 = new String();
                     //create the tokenizers
@@ -281,7 +294,7 @@ class AprioriCalculation
 
         StringTokenizer st, stFile; //tokenizer for candidate and transaction
         boolean match; //whether the transaction has all the items in an itemset
-        boolean trans[] = new boolean[numItems]; //array to hold a transaction so that can be checked
+        boolean trans[] = new boolean[maxItemID]; //array to hold a transaction so that can be checked
         int count[] = new int[candidates.size()]; //the number of successful matches
 
         try
@@ -299,10 +312,16 @@ class AprioriCalculation
                     //System.out.println("Got here " + i + " times"); //useful to debug files that you are unsure of the number of line
                     stFile = new StringTokenizer(data_in.readLine(), itemSep); //read a line from the file to the tokenizer
                     //put the contents of that line into the transaction array
-                    for(int j=0; j<numItems; j++)
+                    /*for(int j=0; j<numItems; j++)
                     {
                         trans[j]=(stFile.nextToken().compareToIgnoreCase(oneVal[j])==0); //if it is not a 0, assign the value to true
+                    }*/
+                    
+                    while(stFile.hasMoreTokens())
+                    {
+                        trans[Integer.parseInt(stFile.nextToken())] = true;
                     }
+                    
 
                     //check each candidate
                     for(int c=0; c<candidates.size(); c++)
@@ -313,7 +332,7 @@ class AprioriCalculation
                         //check each item in the itemset to see if it is present in the transaction
                         while(st.hasMoreTokens())
                         {
-                            match = (trans[Integer.valueOf(st.nextToken())-1]);
+                            match = (trans[Integer.valueOf(st.nextToken())-1]);//Sawyer is wary
                             if(!match) //if it is not present in the transaction stop checking
                                 break;
                         }
@@ -326,11 +345,11 @@ class AprioriCalculation
                 {
                     //  System.out.println("Candidate: " + candidates.get(c) + " with count: " + count + " % is: " + (count/(double)numItems));
                     //if the count% is larger than the minSup%, add to the candidate to the frequent candidates
-                    if((count[i]/(double)numTransactions)>=minSup)
+                    if(count[i]>=minSup)
                     {
                         frequentCandidates.add(candidates.get(i));
                         //put the frequent itemset into the output file
-                        file_out.write(candidates.get(i) + "," + count[i]/(double)numTransactions + "\n");
+                        file_out.write(candidates.get(i) + "," + count[i] + "\n");
                     }
                 }
                 file_out.write("-\n");
