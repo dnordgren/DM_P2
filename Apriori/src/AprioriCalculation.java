@@ -8,38 +8,34 @@ import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.*;
 
-
 class AprioriCalculation
 {   
-    Vector<String> candidates=new Vector<String>(); //the current candidates 
-    String configFile="config.txt"; //configuration file
-    String transaFile="transa.txt"; //transaction file
-    String outputFile="apriori-output.txt";//output file
+    Vector<String> candidates=new Vector<String>(); //current candidates
+    String inputFile="transactions.txt";
+    String outputFile="project_2_output.txt";
     
     int maxItemID;
     int numTransactions; //number of transactions
-    double minSup; //minimum support for a frequent itemset
+    int frequentNum; //minimum occurrences for a frequent itemset
     String itemSep = " "; //the separator value for items in the database
 
     Vector<String> frequentCandidates = new Vector<String>(); //the frequent candidates for the current itemset
-    FileInputStream file_in; //file input stream
-    BufferedReader data_in; //data input stream
-    FileWriter fw;
-    BufferedWriter file_out;
+    FileInputStream fileIn; //file input stream
+    BufferedReader bufferedIn; //data input stream
+    FileWriter fileWriter;
+    BufferedWriter fileOut;
     
     public void aprioriProcess()
     {
         Date d; //date object for timing purposes
         long start, end; //start and end time
-        int itemsetNumber=0; //the current itemset being looked at
         
+        int itemsetNumber=0;
         maxItemID=999;
+        numTransactions=3000;
 
-       //number of transactions
-       numTransactions=3000;
-
-       //minsup
-       minSup=3;
+        //frequentNum
+        frequentNum=3;
 
         //start timer
         d = new Date();
@@ -47,20 +43,19 @@ class AprioriCalculation
 
         System.out.println("Begin Execution");
         
-        //while not complete
         do
         {
-        	//increase the itemset that is being looked at
+        	//loop will run once for each itemset, up to frequentNumber
             itemsetNumber++;
 
             //generate the candidates
-            generateCandidates(itemsetNumber);
+            findCandidates(itemsetNumber);
 
             //determine and display frequent itemsets
-            calculateFrequentItemsets(itemsetNumber);
+            findFrequentItemsets(itemsetNumber);
             
         //if there are <=1 frequent items, then its the end. This prevents reading through the database again. When there is only one frequent itemset.
-        }while(candidates.size()>1 && itemsetNumber < minSup);
+        }while(candidates.size()>1 && itemsetNumber < frequentNum);
 
         System.out.println("Frequent " + itemsetNumber + "-itemsets");
         System.out.println(candidates);
@@ -73,29 +68,11 @@ class AprioriCalculation
         System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
     }
 
-    public static String getInput()
-    {
-        String input="";
-        //read from System.in
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-
-        //try to get users input, if there is an error print the message
-        try
-        {
-            input = reader.readLine();
-        }
-        catch (Exception e)
-        {
-            System.out.println(e);
-        }
-        return input;
-    }
-
-    private void generateCandidates(int n)
+    private void findCandidates(int n)
     {
         Vector<String> tempCandidates = new Vector<String>(); //temporary candidate string vector
 
-        //if its the first set, candidates are just the numbers
+        //if its the first set, candidates are all the numbers
         if(n==1)
         {
             for(int i=0; i<=maxItemID; i++)
@@ -103,22 +80,19 @@ class AprioriCalculation
                 tempCandidates.add(Integer.toString(i));
             }
         }
-        else if(n==2) //second itemset is just all combinations of itemset 1
+        else if(n==2) //second itemset is just all combinations of items in itemset 1
         {
             //add each itemset from the previous frequent itemsets together
-            
         	try
             {
-                    //output file
-                    fw= new FileWriter(outputFile, false);
-                    file_out = new BufferedWriter(fw);
-                    //load the transaction file
-                    file_in = new FileInputStream(transaFile);
-                    data_in = new BufferedReader(new InputStreamReader(file_in));
+                    fileWriter = new FileWriter(outputFile, false);
+                    fileOut = new BufferedWriter(fileWriter);
+                    fileIn = new FileInputStream(inputFile);
+                    bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
                     
 		        	for(int i=0; i<numTransactions; i++)
 		        	{
-		        		List<String> items = Arrays.asList(data_in.readLine().split(itemSep));
+		        		List<String> items = Arrays.asList(bufferedIn.readLine().split(itemSep));
 		        		for(int j=0; j<items.size(); j++)
 		        		{
 		        			if(candidates.contains(items.get(j)))
@@ -141,16 +115,14 @@ class AprioriCalculation
         {
         	try
             {
-                    //output file
-                    fw= new FileWriter(outputFile, false);
-                    file_out = new BufferedWriter(fw);
-                    //load the transaction file
-                    file_in = new FileInputStream(transaFile);
-                    data_in = new BufferedReader(new InputStreamReader(file_in));
+                    fileWriter = new FileWriter(outputFile, false);
+                    fileOut = new BufferedWriter(fileWriter);
+                    fileIn = new FileInputStream(inputFile);
+                    bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
                     
 		        	for(int i=0; i<numTransactions; i++)
 		        	{
-		        		List<String> items = Arrays.asList(data_in.readLine().split(itemSep));
+		        		List<String> items = Arrays.asList(bufferedIn.readLine().split(itemSep));
 		        		for(int j=0; j<items.size(); j++)
 		        		{
 	        				for(int k=j+1; k<items.size(); k++)
@@ -175,32 +147,28 @@ class AprioriCalculation
             	System.out.println(e);
             }
         }
-        //clear the old candidates
         candidates.clear();
-        //set the new ones
         candidates = new Vector<String>(new LinkedHashSet<String>(tempCandidates));
         tempCandidates.clear();
     }
 
-    private void calculateFrequentItemsets(int n)
+    private void findFrequentItemsets(int n)
     {
-    	StringTokenizer st, stFile; //tokenizer for candidate and transaction
+    	StringTokenizer st, stFile;
         boolean match; //whether the transaction has all the items in an itemset
-        int count[] = new int[candidates.size()]; //the number of successful matches
+        int count[] = new int[candidates.size()]; //successful matches count
 
         try
         {
-                //output file
-                fw= new FileWriter(outputFile, false);
-                file_out = new BufferedWriter(fw);
-                //load the transaction file
-                file_in = new FileInputStream(transaFile);
-                data_in = new BufferedReader(new InputStreamReader(file_in));
+                fileWriter = new FileWriter(outputFile, false);
+                fileOut = new BufferedWriter(fileWriter);
+                fileIn = new FileInputStream(inputFile);
+                bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
                 
-                //for each transaction
+                //loop through all transactions
                 for(int i=0; i<numTransactions; i++)
                 {
-                    stFile = new StringTokenizer(data_in.readLine(), itemSep); //read a line from the file to the tokenizer
+                    stFile = new StringTokenizer(bufferedIn.readLine(), itemSep); //read a line from the file to the tokenizer
                     boolean trans[] = new boolean[maxItemID+1];
                     
                     while(stFile.hasMoreTokens())
@@ -208,17 +176,16 @@ class AprioriCalculation
                         trans[Integer.parseInt(stFile.nextToken())] = true;
                     }
                     
-                    //check each candidate
+                    //check all candidates
                     for(int c=0; c<candidates.size(); c++)
                     {
-                        match = false; //reset match to false
-                        //tokenize the candidate so that we know what items need to be present for a match
+                        match = false;
                         st = new StringTokenizer(candidates.get(c), ", ");
-                        //check each item in the itemset to see if it is present in the transaction
+                        //check each item to see if it is in the current transaction line
                         while(st.hasMoreTokens())
                         {
                             match = (trans[Integer.valueOf(st.nextToken())]);
-                            if(!match) //if it is not present in the transaction stop checking
+                            if(!match) //if one is not present, can stop checking the line
                                 break;
                         }
                         if(match) //if at this point it is a match, increase the count
@@ -228,25 +195,22 @@ class AprioriCalculation
                 }
                 for(int i=0; i<candidates.size(); i++)
                 {
-                    //if the count% is larger than the minSup%, add to the candidate to the frequent candidates
-                    if(count[i]>=minSup)
+                    //if the count% is larger than the frequentNum%, add to the candidate to the frequent candidates
+                    if(count[i]>=frequentNum)
                     {
                         frequentCandidates.add(candidates.get(i));
                         //put the frequent itemset into the output file
-                        if(n==minSup)
-                        	file_out.write("("+ candidates.get(i) + ") " + count[i] + "\n");
+                        if(n==frequentNum)
+                        	fileOut.write("("+ candidates.get(i) + ") " + count[i] + "\n");
                     }
                 }
-                file_out.close();
+                fileOut.close();
         }
-        //if error at all in this process, catch it and print the error messate
         catch(IOException e)
         {
             System.out.println(e);
         }
-        //clear old candidates
         candidates.clear();
-        //new candidates are the old frequent candidates
         candidates = new Vector<String>(frequentCandidates);
         frequentCandidates.clear();
     }
