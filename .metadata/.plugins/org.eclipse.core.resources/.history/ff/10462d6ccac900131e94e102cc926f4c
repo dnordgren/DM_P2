@@ -45,8 +45,6 @@ class AprioriCalculation
         d = new Date();
         start = d.getTime();
 
-        System.out.println("Begin Execution");
-        
         //while not complete
         do
         {

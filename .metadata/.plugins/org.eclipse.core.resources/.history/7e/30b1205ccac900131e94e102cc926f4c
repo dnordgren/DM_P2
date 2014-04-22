@@ -10,15 +10,18 @@ import java.util.*;
 
 
 class AprioriCalculation
-{   
+{
+    
     Vector<String> candidates=new Vector<String>(); //the current candidates 
     String configFile="config.txt"; //configuration file
     String transaFile="transa.txt"; //transaction file
     String outputFile="apriori-output.txt";//output file
-    
+    //int numItems; //number of items per transaction
     int maxItemID;
     int numTransactions; //number of transactions
     double minSup; //minimum support for a frequent itemset
+    //?what is this?
+    String oneVal[]; //array of value per column that will be treated as a '1'
     String itemSep = " "; //the separator value for items in the database
 
     Vector<String> frequentCandidates = new Vector<String>(); //the frequent candidates for the current itemset
@@ -27,8 +30,10 @@ class AprioriCalculation
     FileWriter fw;
     BufferedWriter file_out;
     
+
     public void aprioriProcess()
     {
+        //?need?
         Date d; //date object for timing purposes
         long start, end; //start and end time
         int itemsetNumber=0; //the current itemset being looked at
@@ -41,15 +46,17 @@ class AprioriCalculation
        //minsup
        minSup=3;
 
+
+        //System.out.println("Apriori algorithm has started.\n");
+
         //start timer
         d = new Date();
         start = d.getTime();
 
-        System.out.println("Begin Execution");
-        
         //while not complete
         do
         {
+            //System.out.println(itemsetNumber);
         	//increase the itemset that is being looked at
             itemsetNumber++;
 
@@ -62,15 +69,15 @@ class AprioriCalculation
         //if there are <=1 frequent items, then its the end. This prevents reading through the database again. When there is only one frequent itemset.
         }while(candidates.size()>1 && itemsetNumber < minSup);
 
-        System.out.println("Frequent " + itemsetNumber + "-itemsets");
-        System.out.println(candidates);
+//        System.out.println("Frequent " + itemsetNumber + "-itemsets");
+//        System.out.println(candidates);
        
         //end timer
         d = new Date();
         end = d.getTime();
 
         //display the execution time
-        System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
+       // System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
     }
 
     public static String getInput()
@@ -94,6 +101,8 @@ class AprioriCalculation
     private void generateCandidates(int n)
     {
         Vector<String> tempCandidates = new Vector<String>(); //temporary candidate string vector
+        String str1, str2; //strings that will be used for comparisons
+        StringTokenizer st1, st2; //string tokenizers for the two itemsets being compared
 
         //if its the first set, candidates are just the numbers
         if(n==1)
@@ -184,8 +193,10 @@ class AprioriCalculation
 
     private void calculateFrequentItemsets(int n)
     {
-    	StringTokenizer st, stFile; //tokenizer for candidate and transaction
+
+        StringTokenizer st, stFile; //tokenizer for candidate and transaction
         boolean match; //whether the transaction has all the items in an itemset
+         //array to hold a transaction so that can be checked
         int count[] = new int[candidates.size()]; //the number of successful matches
 
         try
@@ -200,7 +211,14 @@ class AprioriCalculation
                 //for each transaction
                 for(int i=0; i<numTransactions; i++)
                 {
+                	//System.out.println("transaction: " + i + "candidate size: " + candidates.size());
+                    //System.out.println("Got here " + i + " times"); //useful to debug files that you are unsure of the number of line
                     stFile = new StringTokenizer(data_in.readLine(), itemSep); //read a line from the file to the tokenizer
+                    //put the contents of that line into the transaction array
+                    /*for(int j=0; j<numItems; j++)
+                    {
+                        trans[j]=(stFile.nextToken().compareToIgnoreCase(oneVal[j])==0); //if it is not a 0, assign the value to true
+                    }*/
                     boolean trans[] = new boolean[maxItemID+1];
                     
                     while(stFile.hasMoreTokens())
@@ -228,6 +246,7 @@ class AprioriCalculation
                 }
                 for(int i=0; i<candidates.size(); i++)
                 {
+                    //  System.out.println("Candidate: " + candidates.get(c) + " with count: " + count + " % is: " + (count/(double)numItems));
                     //if the count% is larger than the minSup%, add to the candidate to the frequent candidates
                     if(count[i]>=minSup)
                     {
