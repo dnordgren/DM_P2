@@ -174,7 +174,7 @@ class AprioriCalculation
 
              //output config info to the user
              System.out.print("\nInput configuration: "+maxItemID+" items, "+numTransactions+" transactions, ");
-             System.out.println("minsup = "+minSup+"%");
+             System.out.println("minsup = "+minSup);
              System.out.println();
              //minSup/=100.0;
             
@@ -197,13 +197,6 @@ class AprioriCalculation
                 for(int i=0; i<oneVal.length; i++)
                     oneVal[i]="1";
             */
-            //create the output file
-            fw= new FileWriter(outputFile);
-            file_out = new BufferedWriter(fw);
-            //put the number of transactions into the output file
-            file_out.write(numTransactions + "\n");
-            file_out.write(maxItemID + "\n******\n");
-            file_out.close();
         }
         //if there is an error, print the message
         catch(IOException e)
@@ -240,7 +233,7 @@ class AprioriCalculation
         	try
             {
                     //output file
-                    fw= new FileWriter(outputFile, true);
+                    fw= new FileWriter(outputFile, false);
                     file_out = new BufferedWriter(fw);
                     //load the transaction file
                     file_in = new FileInputStream(transaFile);
@@ -257,9 +250,8 @@ class AprioriCalculation
 		        				{
 		        					if(candidates.contains(items.get(k)))
 		        					{
-		        						tempCandidates.add(items.get(j) + " " + items.get(k));
+		        						tempCandidates.add(items.get(j) + ", " + items.get(k));
 		        					}
-		        			
 		        				}
 		        			}
 		        		}
@@ -273,7 +265,7 @@ class AprioriCalculation
         	try
             {
                     //output file
-                    fw= new FileWriter(outputFile, true);
+                    fw= new FileWriter(outputFile, false);
                     file_out = new BufferedWriter(fw);
                     //load the transaction file
                     file_in = new FileInputStream(transaFile);
@@ -286,13 +278,13 @@ class AprioriCalculation
 		        		{
 	        				for(int k=j+1; k<items.size(); k++)
 	        				{
-	        					if(candidates.contains(items.get(j) + " " + items.get(k)))
+	        					if(candidates.contains(items.get(j) + ", " + items.get(k)))
 	        					{
 	        						for(int l=k+1; l<items.size(); l++)
 			        				{
-			        					if(candidates.contains(items.get(j) + " " + items.get(l)))
+			        					if(candidates.contains(items.get(j) + ", " + items.get(l)))
 			        					{
-			        						tempCandidates.add(items.get(j) + " " + items.get(k) + " " + items.get(l));
+			        						tempCandidates.add(items.get(j) + ", " + items.get(k) + ", " + items.get(l));
 			        					}
 			        			
 			        				}
@@ -331,7 +323,7 @@ class AprioriCalculation
         try
         {
                 //output file
-                fw= new FileWriter(outputFile, true);
+                fw= new FileWriter(outputFile, false);
                 file_out = new BufferedWriter(fw);
                 //load the transaction file
                 file_in = new FileInputStream(transaFile);
@@ -360,7 +352,7 @@ class AprioriCalculation
                     {
                         match = false; //reset match to false
                         //tokenize the candidate so that we know what items need to be present for a match
-                        st = new StringTokenizer(candidates.get(c));
+                        st = new StringTokenizer(candidates.get(c), ", ");
                         //check each item in the itemset to see if it is present in the transaction
                         while(st.hasMoreTokens())
                         {
@@ -381,10 +373,10 @@ class AprioriCalculation
                     {
                         frequentCandidates.add(candidates.get(i));
                         //put the frequent itemset into the output file
-                        file_out.write(candidates.get(i) + "," + count[i] + "\n");
+                        if(n==minSup)
+                        	file_out.write("("+ candidates.get(i) + ") " + count[i] + "\n");
                     }
                 }
-                file_out.write("-\n");
                 file_out.close();
         }
         //if error at all in this process, catch it and print the error messate
