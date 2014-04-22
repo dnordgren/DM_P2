@@ -3,13 +3,16 @@ import java.util.*;
 
 class AprioriCalculation
 {   
-    Vector<String> candidates=new Vector<String>(); //current candidates
+	//current candidates
+    Vector<String> candidates = new Vector<String>(); 
     
     int maxItemID;
     int numTransactions;
-    int frequentNum; //minimum occurrences for a frequent itemset...support threshold
+    //minimum occurrences for a frequent item set
+    int frequentNum; 
 
-    Vector<String> frequentCandidates = new Vector<String>(); //the frequent candidates for the current itemset
+    //the frequent candidates for the current item set
+    Vector<String> frequentCandidates = new Vector<String>(); 
     
     String inputFile;
     FileInputStream fileIn;
@@ -30,8 +33,10 @@ class AprioriCalculation
     
     public void mainApriori()
     {
-        Date d; //date object for getting time
-        double start, end; //start and end time
+    	//date object for getting time
+        Date d; 
+        //start and end time
+        double start, end; 
 
         //get time right before execution begins
         d = new Date();
@@ -45,15 +50,13 @@ class AprioriCalculation
         {
         	//loop will run once for each itemset, up to frequentNumber
             currentItemset++;
-
             findCandidates(currentItemset);
-
             findFrequentItemsets(currentItemset);
             
-        //Stops if there are <= 1 frequent items
-        }while(candidates.size()>1 && currentItemset < frequentNum);
+        //stops if there are <= 1 frequent items
+        } while(candidates.size() > 1 && currentItemset < frequentNum);
        
-        //get time right after execution endss
+        //get time right after execution ends
         d = new Date();
         end = d.getTime();
 
@@ -64,7 +67,8 @@ class AprioriCalculation
 
     private void findCandidates(int set)
     {
-        Vector<String> candidatesTemp = new Vector<String>(); //temporary candidate string vector
+    	//temporary candidate string vector
+        Vector<String> candidatesTemp = new Vector<String>();
 
         //if its the first set, candidates are all the numbers
         if(set == 1)
@@ -74,9 +78,10 @@ class AprioriCalculation
                 candidatesTemp.add(Integer.toString(i));
             }
         }
-        else if(set == 2) //second itemset is just all combinations of items in itemset 1
+        //second item set is just all combinations of items in item set 1
+        else if(set == 2) 
         {
-            //add each itemset from the previous frequent itemsets together
+            //add each item set from the previous frequent item sets together
         	try
             {
         		fileIn = new FileInputStream(inputFile);
@@ -101,7 +106,9 @@ class AprioriCalculation
 	        			}
 	        		}
 	        	}
-            } catch (IOException e) {
+            } 
+        	catch (IOException e) 
+            {
             	System.out.println(e);
             }
         }
@@ -129,15 +136,14 @@ class AprioriCalculation
 		        					{
 		        						candidatesTemp.add(items.get(j) + ", " + items.get(k) + ", " + items.get(l));
 		        					}
-		        			
 		        				}
         					}
-        			
         				}
-	        			
 	        		}
 	        	}
-            } catch (IOException e) {
+            } 
+        	catch (IOException e) 
+            {
             	System.out.println(e);
             }
         }
@@ -148,20 +154,24 @@ class AprioriCalculation
 
     private void findFrequentItemsets(int set)
     {
-        boolean match; //whether the transaction has all the items in an itemset
-        int count[] = new int[candidates.size()]; //successful matches count
+    	//whether the transaction has all the items in an item set
+        boolean match; 
+        //successful matches count
+        int count[] = new int[candidates.size()]; 
         StringTokenizer candidateTokenizer, transactionTokenizer;
 
         try
         {
         	fileIn = new FileInputStream(inputFile);
             bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
+            
             fileWriter = new FileWriter(outputFile, false);
             bufferedOut = new BufferedWriter(fileWriter);
             
             for(int i = 0; i < numTransactions; i++)
             {
-                transactionTokenizer = new StringTokenizer(bufferedIn.readLine(), " "); //read a line from the file to the tokenizer
+            	//read a line from the file to the tokenizer
+                transactionTokenizer = new StringTokenizer(bufferedIn.readLine(), " "); 
                 boolean trans[] = new boolean[maxItemID+1];
                 
                 while(transactionTokenizer.hasMoreTokens())
@@ -178,13 +188,18 @@ class AprioriCalculation
                     while(candidateTokenizer.hasMoreTokens())
                     {
                         match = (trans[Integer.valueOf(candidateTokenizer.nextToken())]);
-                        if(!match) //if one is not present, can stop checking the line
+                        //if one is not present, can stop checking the line
+                        if(!match)
+                        {
                             break;
+                        }
                     }
-                    if(match) //if the last item checked was a match, that means all items matched
+                    //if the last item checked was a match, that means all items matched
+                    if(match) 
+                    {
                         count[c]++;
+                    }
                 }
-                
             }
             for(int i = 0; i < candidates.size(); i++)
             {
@@ -194,7 +209,9 @@ class AprioriCalculation
                     frequentCandidates.add(candidates.get(i));
                     //add the frequent candidate to the output file, along with the number of occurrences
                     if(set == frequentNum)
+                    {
                     	bufferedOut.write("("+ candidates.get(i) + ") " + count[i] + "\n");
+                    }
                 }
             }
             bufferedOut.close();
