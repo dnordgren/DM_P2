@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 /******************************************************************************
 * Class Name   : AprioriCalculation
@@ -27,6 +27,12 @@ class AprioriCalculation
     String oneVal[]; //array of value per column that will be treated as a '1'
     String itemSep = " "; //the separator value for items in the database
 
+    Vector<String> frequentCandidates = new Vector<String>(); //the frequent candidates for the current itemset
+    FileInputStream file_in; //file input stream
+    BufferedReader data_in; //data input stream
+    FileWriter fw;
+    BufferedWriter file_out;
+    
     /************************************************************************
      * Method Name  : aprioriProcess
      * Purpose      : Generate the apriori itemsets
@@ -51,7 +57,8 @@ class AprioriCalculation
         //while not complete
         do
         {
-            //increase the itemset that is being looked at
+            System.out.println(itemsetNumber);
+        	//increase the itemset that is being looked at
             itemsetNumber++;
 
             //generate the candidates
@@ -59,14 +66,13 @@ class AprioriCalculation
 
             //determine and display frequent itemsets
             calculateFrequentItemsets(itemsetNumber);
-            if(candidates.size()!=0)
-            {
-                System.out.println("Frequent " + itemsetNumber + "-itemsets");
-                System.out.println(candidates);
-            }
+            
         //if there are <=1 frequent items, then its the end. This prevents reading through the database again. When there is only one frequent itemset.
-        }while(candidates.size()>1);
+        }while(candidates.size()>1 && itemsetNumber < minSup);
 
+        System.out.println("Frequent " + itemsetNumber + "-itemsets");
+        System.out.println(candidates);
+       
         //end timer
         d = new Date();
         end = d.getTime();
@@ -230,50 +236,80 @@ class AprioriCalculation
         else if(n==2) //second itemset is just all combinations of itemset 1
         {
             //add each itemset from the previous frequent itemsets together
-            for(int i=0; i<candidates.size(); i++)
+            
+        	try
             {
-                st1 = new StringTokenizer(candidates.get(i));
-                str1 = st1.nextToken();
-                for(int j=i+1; j<candidates.size(); j++)
-                {
-                    st2 = new StringTokenizer(candidates.elementAt(j));
-                    str2 = st2.nextToken();
-                    tempCandidates.add(str1 + " " + str2);
-                }
+                    //output file
+                    fw= new FileWriter(outputFile, true);
+                    file_out = new BufferedWriter(fw);
+                    //load the transaction file
+                    file_in = new FileInputStream(transaFile);
+                    data_in = new BufferedReader(new InputStreamReader(file_in));
+                    
+		        	for(int i=0; i<numTransactions; i++)
+		        	{
+		        		List<String> items = Arrays.asList(data_in.readLine().split(itemSep));
+		        		for(int j=0; j<items.size(); j++)
+		        		{
+		        			if(candidates.contains(items.get(j)))
+		        			{
+		        				for(int k=j+1; k<items.size(); k++)
+		        				{
+		        					if(candidates.contains(items.get(k)))
+		        					{
+		        						tempCandidates.add(items.get(j) + " " + items.get(k));
+		        					}
+		        			
+		        				}
+		        			}
+		        		}
+		        	}
+            } catch (IOException e) {
+            	System.out.println(e);
             }
         }
         else
         {
-            //for each itemset
-            for(int i=0; i<candidates.size(); i++)
+        	try
             {
-                //compare to the next itemset
-                for(int j=i+1; j<candidates.size(); j++)
-                {
-                    //create the strings
-                    str1 = new String();
-                    str2 = new String();
-                    //create the tokenizers
-                    st1 = new StringTokenizer(candidates.get(i));
-                    st2 = new StringTokenizer(candidates.get(j));
-
-                    //make a string of the first n-2 tokens of the strings
-                    for(int s=0; s<n-2; s++)
-                    {
-                        str1 = str1 + " " + st1.nextToken();
-                        str2 = str2 + " " + st2.nextToken();
-                    }
-
-                    //if they have the same n-2 tokens, add them together
-                    if(str2.compareToIgnoreCase(str1)==0)
-                        tempCandidates.add((str1 + " " + st1.nextToken() + " " + st2.nextToken()).trim());
-                }
+                    //output file
+                    fw= new FileWriter(outputFile, true);
+                    file_out = new BufferedWriter(fw);
+                    //load the transaction file
+                    file_in = new FileInputStream(transaFile);
+                    data_in = new BufferedReader(new InputStreamReader(file_in));
+                    
+		        	for(int i=0; i<numTransactions; i++)
+		        	{
+		        		List<String> items = Arrays.asList(data_in.readLine().split(itemSep));
+		        		for(int j=0; j<items.size(); j++)
+		        		{
+	        				for(int k=j+1; k<items.size(); k++)
+	        				{
+	        					if(candidates.contains(items.get(j) + " " + items.get(k)))
+	        					{
+	        						for(int l=k+1; l<items.size(); l++)
+			        				{
+			        					if(candidates.contains(items.get(j) + " " + items.get(l)))
+			        					{
+			        						tempCandidates.add(items.get(j) + " " + items.get(k) + " " + items.get(l));
+			        					}
+			        			
+			        				}
+	        					}
+	        			
+	        				}
+		        			
+		        		}
+		        	}
+            } catch (IOException e) {
+            	System.out.println(e);
             }
         }
         //clear the old candidates
         candidates.clear();
         //set the new ones
-        candidates = new Vector<String>(tempCandidates);
+        candidates = new Vector<String>(new LinkedHashSet<String>(tempCandidates));
         tempCandidates.clear();
     }
 
@@ -286,15 +322,10 @@ class AprioriCalculation
      *************************************************************************/
     private void calculateFrequentItemsets(int n)
     {
-        Vector<String> frequentCandidates = new Vector<String>(); //the frequent candidates for the current itemset
-        FileInputStream file_in; //file input stream
-        BufferedReader data_in; //data input stream
-        FileWriter fw;
-        BufferedWriter file_out;
 
         StringTokenizer st, stFile; //tokenizer for candidate and transaction
         boolean match; //whether the transaction has all the items in an itemset
-        boolean trans[] = new boolean[maxItemID+1]; //array to hold a transaction so that can be checked
+         //array to hold a transaction so that can be checked
         int count[] = new int[candidates.size()]; //the number of successful matches
 
         try
@@ -305,10 +336,11 @@ class AprioriCalculation
                 //load the transaction file
                 file_in = new FileInputStream(transaFile);
                 data_in = new BufferedReader(new InputStreamReader(file_in));
-
+                
                 //for each transaction
                 for(int i=0; i<numTransactions; i++)
                 {
+                	System.out.println("transaction: " + i + "candidate size: " + candidates.size());
                     //System.out.println("Got here " + i + " times"); //useful to debug files that you are unsure of the number of line
                     stFile = new StringTokenizer(data_in.readLine(), itemSep); //read a line from the file to the tokenizer
                     //put the contents of that line into the transaction array
@@ -316,13 +348,13 @@ class AprioriCalculation
                     {
                         trans[j]=(stFile.nextToken().compareToIgnoreCase(oneVal[j])==0); //if it is not a 0, assign the value to true
                     }*/
+                    boolean trans[] = new boolean[maxItemID+1];
                     
                     while(stFile.hasMoreTokens())
                     {
                         trans[Integer.parseInt(stFile.nextToken())] = true;
                     }
                     
-
                     //check each candidate
                     for(int c=0; c<candidates.size(); c++)
                     {
@@ -339,10 +371,7 @@ class AprioriCalculation
                         if(match) //if at this point it is a match, increase the count
                             count[c]++;
                     }
-                    for(int k=0; k<maxItemID; k++)
-                    {
-                        trans[k] = false;
-                    }
+                    
                 }
                 for(int i=0; i<candidates.size(); i++)
                 {
