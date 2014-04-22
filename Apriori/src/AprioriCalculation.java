@@ -1,7 +1,7 @@
 import java.io.*;
 import java.util.*;
 
-class AprioriCalculation
+class AprioriCalculator
 {   
 	//current possibleCombos
     Vector<String> possibleCombos = new Vector<String>(); 
@@ -22,7 +22,7 @@ class AprioriCalculation
     FileWriter fileWriter;
     BufferedWriter bufferedOut;
     
-    public AprioriCalculation(int transactions, int maxItemNum, int supportThreshold, String inputPath, String outputPath)
+    public AprioriCalculator(int transactions, int maxItemNum, int supportThreshold, String inputPath, String outputPath)
     {
     	numTransactions = transactions;
     	maxItemID = maxItemNum;

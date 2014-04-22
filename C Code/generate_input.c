@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     
     char filename[1024];
     FILE *fp = NULL;
-    FILE *input = fopen("transa.txt", "w");
+    FILE *input = fopen("transactions.txt", "w");
 
     struct timeval time_start, time_end;
 
