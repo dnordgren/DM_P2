@@ -3,16 +3,16 @@ import java.util.*;
 
 class AprioriCalculation
 {   
-	//current candidates
-    Vector<String> candidates = new Vector<String>(); 
+	//current possibleCombos
+    Vector<String> possibleCombos = new Vector<String>(); 
     
     int maxItemID;
     int numTransactions;
     //minimum occurrences for a frequent item set
     int frequentNum; 
 
-    //the frequent candidates for the current item set
-    Vector<String> frequentCandidates = new Vector<String>(); 
+    //the frequent Combos for the current item set
+    Vector<String> frequentCombos = new Vector<String>(); 
     
     String inputFile;
     FileInputStream fileIn;
@@ -34,57 +34,57 @@ class AprioriCalculation
     public void mainApriori()
     {
     	//date object for getting time
-        Date d; 
+        Date date; 
         //start and end time
-        double start, end; 
+        double startTime, endTime; 
 
         //get time right before execution begins
-        d = new Date();
-        start = d.getTime();
+        date = new Date();
+        startTime = date.getTime();
 
-        System.out.println("Begin Program Execution");
+        System.out.println("Start");
         
         int currentItemset = 0;
         
         do
         {
-        	//loop will run once for each itemset, up to frequentNumber
+            //loop will run once for each itemset, up to frequentNumber
             currentItemset++;
-            findCandidates(currentItemset);
+            findCombos(currentItemset);
             findFrequentItemsets(currentItemset);
             
         //stops if there are <= 1 frequent items
-        } while(candidates.size() > 1 && currentItemset < frequentNum);
+        } while(possibleCombos.size() > 1 && currentItemset < frequentNum);
        
         //get time right after execution ends
-        d = new Date();
-        end = d.getTime();
+        date = new Date();
+        endTime = date.getTime();
 
         System.out.println("Execution Complete");
-        System.out.println("Program executed in "+((end-start)/1000) + " seconds.");
+        System.out.println("Program executed in "+((endTime - startTime)/1000) + " seconds.");
         System.out.println("Output for a minimum support threshold of " + frequentNum + " was written to '" + outputFile + "'");
     }
 
-    private void findCandidates(int set)
+    private void findCombos(int set)
     {
-    	//temporary candidate string vector
-        Vector<String> candidatesTemp = new Vector<String>();
+    	//temporary combos string vector
+        Vector<String> possibleCombosTemp = new Vector<String>();
 
-        //if its the first set, candidates are all the numbers
+        //if its the first set, possibleCombos are all the numbers
         if(set == 1)
         {
             for(int i = 0; i <= maxItemID; i++)
             {
-                candidatesTemp.add(Integer.toString(i));
+                possibleCombosTemp.add(Integer.toString(i));
             }
         }
         //second item set is just all combinations of items in item set 1
         else if(set == 2) 
         {
             //add each item set from the previous frequent item sets together
-        	try
+            try
             {
-        		fileIn = new FileInputStream(inputFile);
+        	fileIn = new FileInputStream(inputFile);
                 bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
                 fileWriter = new FileWriter(outputFile, false);
                 bufferedOut = new BufferedWriter(fileWriter);
@@ -94,13 +94,13 @@ class AprioriCalculation
 	        		List<String> items = Arrays.asList(bufferedIn.readLine().split(" "));
 	        		for(int j = 0; j < items.size(); j++)
 	        		{
-	        			if(candidates.contains(items.get(j)))
+	        			if(possibleCombos.contains(items.get(j)))
 	        			{
 	        				for(int k = j+1; k < items.size(); k++)
 	        				{
-	        					if(candidates.contains(items.get(k)))
+	        					if(possibleCombos.contains(items.get(k)))
 	        					{
-	        						candidatesTemp.add(items.get(j) + ", " + items.get(k));
+	        						possibleCombosTemp.add(items.get(j) + ", " + items.get(k));
 	        					}
 	        				}
 	        			}
@@ -116,7 +116,7 @@ class AprioriCalculation
         {
         	try
             {
-        		fileIn = new FileInputStream(inputFile);
+        	fileIn = new FileInputStream(inputFile);
                 bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
                 fileWriter = new FileWriter(outputFile, false);
                 bufferedOut = new BufferedWriter(fileWriter);
@@ -128,13 +128,13 @@ class AprioriCalculation
 	        		{
         				for(int k = j+1; k < items.size(); k++)
         				{
-        					if(candidates.contains(items.get(j) + ", " + items.get(k)))
+        					if(possibleCombos.contains(items.get(j) + ", " + items.get(k)))
         					{
         						for(int l=k+1; l<items.size(); l++)
 		        				{
-		        					if(candidates.contains(items.get(j) + ", " + items.get(l)))
+		        					if(possibleCombos.contains(items.get(j) + ", " + items.get(l)))
 		        					{
-		        						candidatesTemp.add(items.get(j) + ", " + items.get(k) + ", " + items.get(l));
+		        						possibleCombosTemp.add(items.get(j) + ", " + items.get(k) + ", " + items.get(l));
 		        					}
 		        				}
         					}
@@ -147,9 +147,9 @@ class AprioriCalculation
             	System.out.println(e);
             }
         }
-        candidates.clear();
-        candidates = new Vector<String>(new LinkedHashSet<String>(candidatesTemp));
-        candidatesTemp.clear();
+        possibleCombos.clear();
+        possibleCombos = new Vector<String>(new LinkedHashSet<String>(possibleCombosTemp));
+        possibleCombosTemp.clear();
     }
 
     private void findFrequentItemsets(int set)
@@ -157,12 +157,12 @@ class AprioriCalculation
     	//whether the transaction has all the items in an item set
         boolean match; 
         //successful matches count
-        int count[] = new int[candidates.size()]; 
+        int count[] = new int[possibleCombos.size()]; 
         StringTokenizer candidateTokenizer, transactionTokenizer;
 
         try
         {
-        	fileIn = new FileInputStream(inputFile);
+            fileIn = new FileInputStream(inputFile);
             bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
             
             fileWriter = new FileWriter(outputFile, false);
@@ -179,11 +179,11 @@ class AprioriCalculation
                     trans[Integer.parseInt(transactionTokenizer.nextToken())] = true;
                 }
                 
-                //check all candidates
-                for(int c = 0; c < candidates.size(); c++)
+                //check all possibleCombos
+                for(int c = 0; c < possibleCombos.size(); c++)
                 {
                     match = false;
-                    candidateTokenizer = new StringTokenizer(candidates.get(c), ", ");
+                    candidateTokenizer = new StringTokenizer(possibleCombos.get(c), ", ");
                     //check each item to see if it is in the current transaction line
                     while(candidateTokenizer.hasMoreTokens())
                     {
@@ -201,16 +201,16 @@ class AprioriCalculation
                     }
                 }
             }
-            for(int i = 0; i < candidates.size(); i++)
+            for(int i = 0; i < possibleCombos.size(); i++)
             {
                 //if the count is larger than the support threshold, the candidate is frequent
                 if(count[i] >= frequentNum)
                 {
-                    frequentCandidates.add(candidates.get(i));
+                    frequentCombos.add(possibleCombos.get(i));
                     //add the frequent candidate to the output file, along with the number of occurrences
                     if(set == frequentNum)
                     {
-                    	bufferedOut.write("("+ candidates.get(i) + ") " + count[i] + "\n");
+                    	bufferedOut.write("("+ possibleCombos.get(i) + ") " + count[i] + "\n");
                     }
                 }
             }
@@ -220,8 +220,8 @@ class AprioriCalculation
         {
             System.out.println(e);
         }
-        candidates.clear();
-        candidates = new Vector<String>(frequentCandidates);
-        frequentCandidates.clear();
+        possibleCombos.clear();
+        possibleCombos = new Vector<String>(frequentCombos);
+        frequentCombos.clear();
     }
 }
