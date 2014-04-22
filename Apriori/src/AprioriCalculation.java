@@ -8,13 +8,10 @@ import java.util.Date;
 import java.util.StringTokenizer;
 import java.util.*;
 
-/******************************************************************************
-* Class Name   : AprioriCalculation
-* Purpose      : generate Apriori itemsets
-*****************************************************************************/
+
 class AprioriCalculation
 {
-    //?current basket
+    
     Vector<String> candidates=new Vector<String>(); //the current candidates 
     String configFile="config.txt"; //configuration file
     String transaFile="transa.txt"; //transaction file
@@ -33,12 +30,7 @@ class AprioriCalculation
     FileWriter fw;
     BufferedWriter file_out;
     
-    /************************************************************************
-     * Method Name  : aprioriProcess
-     * Purpose      : Generate the apriori itemsets
-     * Parameters   : None
-     * Return       : None
-     *************************************************************************/
+
     public void aprioriProcess()
     {
         //?need?
@@ -46,9 +38,16 @@ class AprioriCalculation
         long start, end; //start and end time
         int itemsetNumber=0; //the current itemset being looked at
         
-        getConfig();
+        maxItemID=999;
 
-        System.out.println("Apriori algorithm has started.\n");
+       //number of transactions
+       numTransactions=3000;
+
+       //minsup
+       minSup=3;
+
+
+        //System.out.println("Apriori algorithm has started.\n");
 
         //start timer
         d = new Date();
@@ -57,7 +56,7 @@ class AprioriCalculation
         //while not complete
         do
         {
-            System.out.println(itemsetNumber);
+            //System.out.println(itemsetNumber);
         	//increase the itemset that is being looked at
             itemsetNumber++;
 
@@ -70,24 +69,17 @@ class AprioriCalculation
         //if there are <=1 frequent items, then its the end. This prevents reading through the database again. When there is only one frequent itemset.
         }while(candidates.size()>1 && itemsetNumber < minSup);
 
-        System.out.println("Frequent " + itemsetNumber + "-itemsets");
-        System.out.println(candidates);
+//        System.out.println("Frequent " + itemsetNumber + "-itemsets");
+//        System.out.println(candidates);
        
         //end timer
         d = new Date();
         end = d.getTime();
 
         //display the execution time
-        System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
+       // System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
     }
 
-    //? readline method
-    /************************************************************************
-     * Method Name  : getInput
-     * Purpose      : get user input from System.in
-     * Parameters   : None
-     * Return       : String value of the users input
-     *************************************************************************/
     public static String getInput()
     {
         String input="";
@@ -106,119 +98,7 @@ class AprioriCalculation
         return input;
     }
 
-    /************************************************************************
-     * Method Name  : getConfig
-     * Purpose      : get the configuration information (config filename, transaction filename)
-     *              : configFile and transaFile will be change appropriately
-     * Parameters   : None
-     * Return       : None
-     *************************************************************************/
-    private void getConfig()
-    {
-        FileWriter fw;
-        BufferedWriter file_out;
-        /*
-        String input="";
-        //ask if want to change the config
-        //? console output for settings -remove-
-        System.out.println("Default Configuration: ");
-        System.out.println("\tRegular transaction file with '" + itemSep + "' item separator.");
-        System.out.println("\tConfig File: " + configFile);
-        System.out.println("\tTransa File: " + transaFile);
-        System.out.println("\tOutput File: " + outputFile);
-        System.out.println("\nPress 'C' to change the item separator, configuration file and transaction files");
-        System.out.print("or any other key to continue.  ");
-        input=getInput();
 
-        //?change config files -remove-
-        if(input.compareToIgnoreCase("c")==0)
-        {
-            System.out.print("Enter new transaction filename (return for '"+transaFile+"'): ");
-            input=getInput();
-            if(input.compareToIgnoreCase("")!=0)
-                transaFile=input;
-
-            System.out.print("Enter new configuration filename (return for '"+configFile+"'): ");
-            input=getInput();
-            if(input.compareToIgnoreCase("")!=0)
-                configFile=input;
-
-            System.out.print("Enter new output filename (return for '"+outputFile+"'): ");
-            input=getInput();
-            if(input.compareToIgnoreCase("")!=0)
-                outputFile=input;
-
-            System.out.println("Filenames changed");
-
-            System.out.print("Enter the separating character(s) for items (return for '"+itemSep+"'): ");
-            input=getInput();
-            if(input.compareToIgnoreCase("")!=0)
-                itemSep=input;
-
-
-        }*/
-
-        //? read config files
-        try
-        {
-             FileInputStream file_in = new FileInputStream(configFile);
-             BufferedReader data_in = new BufferedReader(new InputStreamReader(file_in));
-             //number of items
-             maxItemID=Integer.valueOf(data_in.readLine()).intValue();
-
-             //number of transactions
-             numTransactions=Integer.valueOf(data_in.readLine()).intValue();
-
-             //minsup
-             minSup=(Double.valueOf(data_in.readLine()).doubleValue());
-
-             //output config info to the user
-             System.out.print("\nInput configuration: "+maxItemID+" items, "+numTransactions+" transactions, ");
-             System.out.println("minsup = "+minSup+"%");
-             System.out.println();
-             //minSup/=100.0;
-            
-            /*
-            oneVal = new String[maxItemID];
-            
-            //? change the column labels to indicate what value a one actually represents
-            System.out.print("Enter 'y' to change the value each row recognizes as a '1':");
-            if(getInput().compareToIgnoreCase("y")==0)
-            {
-                for(int i=0; i<oneVal.length; i++)
-                {
-                    System.out.print("Enter value for column #" + (i+1) + ": ");
-                    oneVal[i] = getInput();
-                }
-            }
-            
-            //?otherwise just let 1 for every column is good enough
-            else
-                for(int i=0; i<oneVal.length; i++)
-                    oneVal[i]="1";
-            */
-            //create the output file
-            fw= new FileWriter(outputFile);
-            file_out = new BufferedWriter(fw);
-            //put the number of transactions into the output file
-            file_out.write(numTransactions + "\n");
-            file_out.write(maxItemID + "\n******\n");
-            file_out.close();
-        }
-        //if there is an error, print the message
-        catch(IOException e)
-        {
-            System.out.println(e);
-        }
-    }
-
-    /************************************************************************
-     * Method Name  : generateCandidates
-     * Purpose      : Generate all possible candidates for the n-th itemsets
-     *              : these candidates are stored in the candidates class vector
-     * Parameters   : n - integer value representing the current itemsets to be created
-     * Return       : None
-     *************************************************************************/
     private void generateCandidates(int n)
     {
         Vector<String> tempCandidates = new Vector<String>(); //temporary candidate string vector
@@ -313,13 +193,6 @@ class AprioriCalculation
         tempCandidates.clear();
     }
 
-    /************************************************************************
-     * Method Name  : calculateFrequentItemsets
-     * Purpose      : Determine which candidates are frequent in the n-th itemsets
-     *              : from all possible candidates
-     * Parameters   : n - iteger representing the current itemsets being evaluated
-     * Return       : None
-     *************************************************************************/
     private void calculateFrequentItemsets(int n)
     {
 
@@ -340,7 +213,7 @@ class AprioriCalculation
                 //for each transaction
                 for(int i=0; i<numTransactions; i++)
                 {
-                	System.out.println("transaction: " + i + "candidate size: " + candidates.size());
+                	//System.out.println("transaction: " + i + "candidate size: " + candidates.size());
                     //System.out.println("Got here " + i + " times"); //useful to debug files that you are unsure of the number of line
                     stFile = new StringTokenizer(data_in.readLine(), itemSep); //read a line from the file to the tokenizer
                     //put the contents of that line into the transaction array
