@@ -1,114 +1,170 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Date;
+import java.util.StringTokenizer;
 import java.util.*;
 
-class AprioriCalculator
+
+class AprioriCalculation
 {   
-	//current possibleCombos
-    Vector<String> possibleCombos = new Vector<String>(); 
+    Vector<String> candidates=new Vector<String>(); //the current candidates 
+    String configFile="config.txt"; //configuration file
+    String transaFile="transa (1).txt"; //transaction file
+    String sentimentFile="sentiment.csv";
+    String outputFile="apriori-output.txt";//output file
     
     int maxItemID;
-    int numTransactions;
-    //minimum occurrences for a frequent item set
-    int frequentNum; 
+    int numTransactions; //number of transactions
+    double minSup; //minimum support for a frequent itemset
+    HashMap<String, Integer> sentiments;
+    String itemSep = " "; //the separator value for items in the database
 
-    //the frequent Combos for the current item set
-    Vector<String> frequentCombos = new Vector<String>(); 
+    Vector<String> frequentCandidates = new Vector<String>(); //the frequent candidates for the current itemset
+    Vector<int[]> frequentReviews = new Vector<int[]>(); 
     
-    String inputFile;
-    FileInputStream fileIn;
-    BufferedReader bufferedIn;
+    FileInputStream file_in; //file input stream
+    BufferedReader data_in; //data input stream
+    FileWriter fw;
+    BufferedWriter file_out;
     
-    String outputFile;
-    FileWriter fileWriter;
-    BufferedWriter bufferedOut;
-    
-    public AprioriCalculator(int transactions, int maxItemNum, int supportThreshold, String inputPath, String outputPath)
+    public void aprioriProcess()
     {
-    	numTransactions = transactions;
-    	maxItemID = maxItemNum;
-    	frequentNum = supportThreshold;
-    	inputFile = inputPath;
-    	outputFile = outputPath;
-    }
-    
-    public void mainApriori()
-    {
-    	//date object for getting time
-        Date date; 
-        //start and end time
-        double startTime, endTime; 
-
-        //get time right before execution begins
-        date = new Date();
-        startTime = date.getTime();
-
-        System.out.println("Start");
+        Date d; //date object for timing purposes
+        long start, end; //start and end time
+        int itemsetNumber=0; //the current itemset being looked at
         
-        int currentItemset = 0;
+        sentiments = new HashMap<String, Integer>();
+        try{
+        	file_in = new FileInputStream(sentimentFile);
+        	data_in = new BufferedReader(new InputStreamReader(file_in));
+        	
+        	String current;
+            while((current = data_in.readLine()) != null)
+            {
+            	sentiments.put(current.split("\t")[0], Integer.parseInt(current.split("\t")[1]));
+            }
+        } catch (Exception e)
+        {}
         
+        
+        
+        
+        maxItemID=999;
+
+       //number of transactions
+       numTransactions=3000;
+
+       //minsup
+       minSup=3;
+
+        //start timer
+        d = new Date();
+        start = d.getTime();
+
+        System.out.println("Begin Execution");
+        
+        //while not complete
         do
         {
-            //loop will run once for each itemset, up to frequentNumber
-            currentItemset++;
-            findCombos(currentItemset);
-            findFrequentItemsets(currentItemset);
-            
-        //stops if there are <= 1 frequent items
-        } while(possibleCombos.size() > 1 && currentItemset < frequentNum);
-       
-        //get time right after execution ends
-        date = new Date();
-        endTime = date.getTime();
+        	//increase the itemset that is being looked at
+            itemsetNumber++;
 
-        System.out.println("Execution Complete");
-        System.out.println("Program executed in "+((endTime - startTime)/1000) + " seconds.");
-        System.out.println("Output for a minimum support threshold of " + frequentNum + " was written to '" + outputFile + "'");
+            //generate the candidates
+            generateCandidates(itemsetNumber);
+
+            //determine and display frequent itemsets
+            calculateFrequentItemsets(itemsetNumber);
+            
+        //if there are <=1 frequent items, then its the end. This prevents reading through the database again. When there is only one frequent itemset.
+        }while(candidates.size()>1 && itemsetNumber < minSup);
+
+        System.out.println("Frequent " + itemsetNumber + "-itemsets");
+        System.out.println(candidates);
+       
+        //end timer
+        d = new Date();
+        end = d.getTime();
+
+        //display the execution time
+        System.out.println("Execution time is: "+((double)(end-start)/1000) + " seconds.");
     }
 
-    private void findCombos(int set)
+    public static String getInput()
     {
-    	//temporary combos string vector
-        Vector<String> possibleCombosTemp = new Vector<String>();
+        String input="";
+        //read from System.in
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
 
-        //if its the first set, possibleCombos are all the numbers
-        if(set == 1)
+        //try to get users input, if there is an error print the message
+        try
         {
-            for(int i = 0; i <= maxItemID; i++)
+            input = reader.readLine();
+        }
+        catch (Exception e)
+        {
+            System.out.println(e);
+        }
+        return input;
+    }
+
+    private void generateCandidates(int n)
+    {
+        Vector<String> tempCandidates = new Vector<String>(); //temporary candidate string vector
+
+        //if its the first set, candidates are just the numbers
+        if(n==1)
+        {
+            for(int i=0; i<=maxItemID; i++)
             {
-                possibleCombosTemp.add(Integer.toString(i));
+                tempCandidates.add(Integer.toString(i));
             }
         }
-        //second item set is just all combinations of items in item set 1
-        else if(set == 2) 
+        else if(n==2) //second itemset is just all combinations of itemset 1
         {
-            //add each item set from the previous frequent item sets together
-            try
+            //add each itemset from the previous frequent itemsets together
+            
+        	try
             {
-        	fileIn = new FileInputStream(inputFile);
-                bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
-                fileWriter = new FileWriter(outputFile, false);
-                bufferedOut = new BufferedWriter(fileWriter);
-                
-	        	for(int i = 0; i < numTransactions; i++)
-	        	{
-	        		List<String> items = Arrays.asList(bufferedIn.readLine().split(" "));
-	        		for(int j = 0; j < items.size(); j++)
-	        		{
-	        			if(possibleCombos.contains(items.get(j)))
-	        			{
-	        				for(int k = j+1; k < items.size(); k++)
-	        				{
-	        					if(possibleCombos.contains(items.get(k)))
-	        					{
-	        						possibleCombosTemp.add(items.get(j) + ", " + items.get(k));
-	        					}
-	        				}
-	        			}
-	        		}
-	        	}
-            } 
-        	catch (IOException e) 
-            {
+                    //output file
+                    fw= new FileWriter(outputFile, false);
+                    file_out = new BufferedWriter(fw);
+                    //load the transaction file
+                    file_in = new FileInputStream(transaFile);
+                    data_in = new BufferedReader(new InputStreamReader(file_in));
+                    
+		        	for(int i=0; i<numTransactions; i++)
+		        	{
+		        		String pattern = "(\\}?\\{)|\\}";
+	                	String[] objectList = data_in.readLine().split(pattern);
+	                	String itemList = "";
+	                	String reviewList = "";
+	                	for(int j=1; j<objectList.length-1; j++) {
+	                		itemList += objectList[j].split(",")[0];
+	                		itemList += " ";
+	                		reviewList += objectList[j].split(",")[1];
+	                		reviewList += ",";
+	                	}
+	                	String weekday = objectList[objectList.length-1];
+		        		List<String> items = Arrays.asList(itemList.split(itemSep));
+		        		for(int j=0; j<items.size(); j++)
+		        		{
+		        			if(candidates.contains(items.get(j)))
+		        			{
+		        				for(int k=j+1; k<items.size(); k++)
+		        				{
+		        					if(candidates.contains(items.get(k)))
+		        					{
+		        						tempCandidates.add(items.get(j) + ", " + items.get(k));
+		        					}
+		        				}
+		        			}
+		        		}
+		        	}
+            } catch (IOException e) {
             	System.out.println(e);
             }
         }
@@ -116,112 +172,186 @@ class AprioriCalculator
         {
         	try
             {
-        	fileIn = new FileInputStream(inputFile);
-                bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
-                fileWriter = new FileWriter(outputFile, false);
-                bufferedOut = new BufferedWriter(fileWriter);
-                
-	        	for(int i = 0; i < numTransactions; i++)
-	        	{
-	        		List<String> items = Arrays.asList(bufferedIn.readLine().split(" "));
-	        		for(int j = 0; j < items.size(); j++)
-	        		{
-        				for(int k = j+1; k < items.size(); k++)
-        				{
-        					if(possibleCombos.contains(items.get(j) + ", " + items.get(k)))
-        					{
-        						for(int l=k+1; l<items.size(); l++)
-		        				{
-		        					if(possibleCombos.contains(items.get(j) + ", " + items.get(l)))
-		        					{
-		        						possibleCombosTemp.add(items.get(j) + ", " + items.get(k) + ", " + items.get(l));
-		        					}
-		        				}
-        					}
-        				}
-	        		}
-	        	}
-            } 
-        	catch (IOException e) 
-            {
+                    //output file
+                    fw= new FileWriter(outputFile, false);
+                    file_out = new BufferedWriter(fw);
+                    //load the transaction file
+                    file_in = new FileInputStream(transaFile);
+                    data_in = new BufferedReader(new InputStreamReader(file_in));
+                    
+		        	for(int i=0; i<numTransactions; i++)
+		        	{
+		        		String pattern = "(\\}?\\{)|\\}";
+	                	String[] objectList = data_in.readLine().split(pattern);
+	                	String itemList = "";
+	                	String reviewList = "";
+	                	for(int j=1; j<objectList.length-1; j++) {
+	                		itemList += objectList[j].split(",")[0];
+	                		itemList += " ";
+	                		reviewList += objectList[j].split(",")[1];
+	                		reviewList += ",";
+	                	}
+	                	String weekday = objectList[objectList.length-1];
+		        		List<String> items = Arrays.asList(itemList.split(itemSep));
+		        		for(int j=0; j<items.size(); j++)
+		        		{
+	        				for(int k=j+1; k<items.size(); k++)
+	        				{
+	        					if(candidates.contains(items.get(j) + ", " + items.get(k)))
+	        					{
+	        						for(int l=k+1; l<items.size(); l++)
+			        				{
+			        					if(candidates.contains(items.get(j) + ", " + items.get(l)))
+			        					{
+			        						tempCandidates.add(items.get(j) + ", " + items.get(k) + ", " + items.get(l));
+			        					}
+			        			
+			        				}
+	        					}
+	        			
+	        				}
+		        			
+		        		}
+		        	}
+            } catch (IOException e) {
             	System.out.println(e);
             }
         }
-        possibleCombos.clear();
-        possibleCombos = new Vector<String>(new LinkedHashSet<String>(possibleCombosTemp));
-        possibleCombosTemp.clear();
+        //clear the old candidates
+        candidates.clear();
+        //set the new ones
+        candidates = new Vector<String>(new LinkedHashSet<String>(tempCandidates));
+        tempCandidates.clear();
     }
 
-    private void findFrequentItemsets(int set)
+    private void calculateFrequentItemsets(int n)
     {
-    	//whether the transaction has all the items in an item set
-        boolean match; 
-        //successful matches count
-        int count[] = new int[possibleCombos.size()]; 
-        StringTokenizer candidateTokenizer, transactionTokenizer;
+    	StringTokenizer st, stFile, stReview; //tokenizer for candidate and transaction
+        boolean match; //whether the transaction has all the items in an itemset
+        int count[] = new int[candidates.size()]; //the number of successful matches
+        int review[][] = new int[candidates.size()][7];
 
         try
         {
-            fileIn = new FileInputStream(inputFile);
-            bufferedIn = new BufferedReader(new InputStreamReader(fileIn));
-            
-            fileWriter = new FileWriter(outputFile, false);
-            bufferedOut = new BufferedWriter(fileWriter);
-            
-            for(int i = 0; i < numTransactions; i++)
-            {
-            	//read a line from the file to the tokenizer
-                transactionTokenizer = new StringTokenizer(bufferedIn.readLine(), " "); 
-                boolean trans[] = new boolean[maxItemID+1];
+                //output file
+                fw= new FileWriter(outputFile, false);
+                file_out = new BufferedWriter(fw);
+                //load the transaction file
+                file_in = new FileInputStream(transaFile);
+                data_in = new BufferedReader(new InputStreamReader(file_in));
                 
-                while(transactionTokenizer.hasMoreTokens())
+                //for each transaction
+                System.out.println(candidates.size());
+                for(int i=0; i<numTransactions; i++)
                 {
-                    trans[Integer.parseInt(transactionTokenizer.nextToken())] = true;
-                }
-                
-                //check all possibleCombos
-                for(int c = 0; c < possibleCombos.size(); c++)
-                {
-                    match = false;
-                    candidateTokenizer = new StringTokenizer(possibleCombos.get(c), ", ");
-                    //check each item to see if it is in the current transaction line
-                    while(candidateTokenizer.hasMoreTokens())
+                	String pattern = "(\\}?\\{)|\\}";
+                	String[] objectList = data_in.readLine().split(pattern);
+                	String itemList = "";
+                	String reviewList = "";
+                	for(int j=1; j<objectList.length-1; j++) {
+                		itemList += objectList[j].split(",")[0];
+                		itemList += " ";
+                		reviewList += objectList[j].split(",")[1];
+                		reviewList += ",";
+                	}
+                	String weekday = objectList[objectList.length-1];
+                	
+                	System.out.println("Transaction " + i + ": " + itemList + weekday);
+                	
+                	stFile = new StringTokenizer(itemList, itemSep); //read a line from the file to the tokenizer
+                    stReview = new StringTokenizer(reviewList, ",");
+                	boolean trans[] = new boolean[maxItemID+1];
+                    int reviewNumber[][] = new int[maxItemID+1][7];
+                    
+                    while(stFile.hasMoreTokens())
                     {
-                        match = (trans[Integer.valueOf(candidateTokenizer.nextToken())]);
-                        //if one is not present, can stop checking the line
-                        if(!match)
+                        int itemID = Integer.parseInt(stFile.nextToken());
+                    	trans[itemID] = true;
+                        reviewNumber[itemID][GetWeekdayIndex(weekday)] = calculateSentiment(stReview.nextToken());
+                        System.out.println("\tItem:" + itemID + " " + reviewNumber[itemID]);
+                    }
+                    
+                    //check each candidate
+                    for(int c=0; c<candidates.size(); c++)
+                    {
+                        match = false; //reset match to false
+                        int[] totalSentiment = new int[7];
+                        //tokenize the candidate so that we know what items need to be present for a match
+                        st = new StringTokenizer(candidates.get(c), ", ");
+                        //check each item in the itemset to see if it is present in the transaction
+                        while(st.hasMoreTokens())
                         {
-                            break;
+                        	int itemID = Integer.valueOf(st.nextToken());
+                            match = trans[itemID];
+                            for(int k=0; k<7; k++){
+	                            totalSentiment[k] += reviewNumber[itemID][k];
+	                        }
+                            if(!match) //if it is not present in the transaction stop checking
+                                break;
+                        }
+                        
+                        if(match) {//if at this point it is a match, increase the count
+                            count[c]++;
+                        	for(int m=0; m<7; m++){
+                        		review[c][m] += totalSentiment[m];
+                        	}
                         }
                     }
-                    //if the last item checked was a match, that means all items matched
-                    if(match) 
-                    {
-                        count[c]++;
-                    }
+                    
                 }
-            }
-            for(int i = 0; i < possibleCombos.size(); i++)
-            {
-                //if the count is larger than the support threshold, the candidate is frequent
-                if(count[i] >= frequentNum)
+                for(int i=0; i<candidates.size(); i++)
                 {
-                    frequentCombos.add(possibleCombos.get(i));
-                    //add the frequent candidate to the output file, along with the number of occurrences
-                    if(set == frequentNum)
+                    //if the count% is larger than the minSup%, add to the candidate to the frequent candidates
+                    if(count[i]>=minSup)
                     {
-                    	bufferedOut.write("("+ possibleCombos.get(i) + ") " + count[i] + "\n");
+                        frequentCandidates.add(candidates.get(i));
+                        frequentReviews.add(review[i]);
+                        //put the frequent itemset into the output file
+                        System.out.println("( "+ candidates.get(i) + ") " + review[i][0] + " " + review[i][1] + " " + review[i][2] + " " + review[i][3] + " " + review[i][4] + " " + review[i][5] + " " + review[i][6]);
+                        if(n==minSup)
+                        	file_out.write("( "+ candidates.get(i) + ") " + review[i][0] + " " + review[i][1] + " " + review[i][2] + " " + review[i][3] + " " + review[i][4] + " " + review[i][5] + " " + review[i][6] + "\n");
                     }
                 }
-            }
-            bufferedOut.close();
+                file_out.close();
         }
+        //if error at all in this process, catch it and print the error messate
         catch(IOException e)
         {
             System.out.println(e);
         }
-        possibleCombos.clear();
-        possibleCombos = new Vector<String>(frequentCombos);
-        frequentCombos.clear();
+        //clear old candidates
+        candidates.clear();
+        //new candidates are the old frequent candidates
+        candidates = new Vector<String>(frequentCandidates);
+        frequentCandidates.clear();
+        frequentReviews.clear();
+    }
+    
+    public int GetWeekdayIndex(String input) {
+    	int result = 0;
+    	if(input.equals("Sunday"))
+    		result = 0;
+    	else if (input.equals("Monday"))
+    		result = 1;
+    	else if (input.equals("Tuesday"))
+    		result = 2;
+    	else if (input.equals("Wednesday"))
+    		result = 3;
+    	else if (input.equals("Thursday"))
+    		result = 4;
+    	else if (input.equals("Friday"))
+    		result = 5;
+    	else if (input.equals("Saturday"))
+    		result = 6;
+    	return result;
+    }
+    
+    public int calculateSentiment(String input) {
+    	int sum = 0;
+    	StringTokenizer tok = new StringTokenizer(input, " ");
+    	while(tok.hasMoreTokens()) {
+    		sum += sentiments.get(tok.nextToken());
+    	}
+    	return sum;
     }
 }
