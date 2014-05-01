@@ -1,4 +1,4 @@
-var margin = {top: 20, right: 20, bottom: 20, left: 20};
+var margin = {top: 20, right: 20, bottom: 40, left: 20};
 
 var height = 500 - margin.top - margin.bottom;
 var width = 960;
@@ -26,25 +26,13 @@ var yAxis = d3.svg.axis()
     .orient("left");     
 	
 
-highest = (parseInt(document.getElementById('highest').value));
+var item = ((document.getElementById('highest').value));
 
 
 d3.tsv("data.tsv", type, function(error, data) {
 
     y.domain([d3.min(data, function(d) { return  d.Monday + d.Tuesday + d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday;}), 
               d3.max(data, function(d) { return  d.Monday + d.Tuesday + d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday; }     )]);
-
-// chart.append("g")
-//     .attr("class", "x axis")
-//     .attr("transform", "translate(20," + (height + 20) + ")")
-//     .call(xAxis)
-// .append("text")
-//     .attr("x", 850)
-//     .attr("y", -10)
-//     .attr("dy", ".71em")
-//     .style("text-anchor", "middle")
-//     .text("Total Sentiment");
-
 
 chart.append("g")
       .attr("class", "y axis")
@@ -57,27 +45,41 @@ chart.append("g")
     .style("text-anchor", "end")
     .text("Total Sentiment");
 
+chart.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(20," + (y(0) + 20) + ")")
+      .call(xAxis)    
+.append("text")
+    .attr("transform", "rotate(0)")
+    .attr("y", 6)
+    .attr("x",barWidth * data.length)
+    .attr("dy", ".71em")
+    .style("text-anchor", "end")
+    .text("Itemset");
 
 	chart.attr("width", margin.left + barWidth * data.length);
 
 	var bar = allgroup.selectAll("g")
 			.data(data)
 		.enter().append("g")
+                  
 			.attr("transform", function(d, i) { return "translate(" + i * barWidth + ",0)"; });
 
-console.log(function(d) { return (d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday)});
-
-if (function(d) { return (d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday) > highest }   ){
-
 	bar.append("rect")
-         .attr("y", function(d, i) { return (d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday) 
-                                                    < 0 ? y(0) : y(d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday); }   )   
+        .attr("y", function(d, i) { return (d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday) 
+                                                < 0 ? y(0) : y(d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday); }   )   
         //.attr("y", function(d) { return y(0); })
+
+         
         .attr("height", function(d, i) { return Math.abs( y(d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Friday + d.Saturday+ d.Sunday) - y(0) ); })
         //.attr("height", function(d) { return  height - y(d.Monday + d.Tuesday); })
-        .attr("width", barWidth - 1)      
+        .attr("width", barWidth - 1)  
+        .attr("class", function(d){ return (    (d.Itemset).indexOf(" " +item +",") > -1 || (d.Itemset).indexOf("(" + item + ",") > -1 || (d.Itemset).indexOf(" " + item + ")")) > -1 ? "queried" : "" })     
+        .style("fill", function(d){ return (    (d.Itemset).indexOf(" " +item +",") > -1 || (d.Itemset).indexOf("(" + item + ",") > -1 || (d.Itemset).indexOf(" " + item + ")")) > -1 ? "red" : "steelblue" }) 
+
+
         .on("mouseover", function(d, i){
-            d3.select(this).style("fill", "orange");
+            d3.select(this).style("fill", "yellow");
             var tipy = d3.select(this).attr("y");
             var tipx = barWidth* i;
             tooltip.attr("y", tipy); 		
@@ -90,9 +92,14 @@ if (function(d) { return (d.Monday+d.Tuesday+ d.Wednesday + d.Thursday + d.Frida
           
             
         .on("mouseout", function(){
-            d3.select(this).style("fill", "steelblue");
+            if(d3.select(this).attr("class") == "queried"){
+                d3.select(this).style("fill", "red");
+            } else {
+                console.log(d3.select(this).attr("class"));
+                d3.select(this).style("fill", "steelblue");
+
+            }
             tooltip.style("visibility", "hidden");});
-    }
 
 });
 
