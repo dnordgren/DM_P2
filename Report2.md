@@ -52,12 +52,12 @@ The Interactive Bar Chart visualization, which can be found in the folder named 
 
 By selecting checkboxes, the user can control which days of the week they view total sentiment for. For example, by selecting Monday, Tuesday, and Wednesday, each bar will represent the total sentiment for an itemset purchased on any or all of those three days. By selecting a single day, the user can view the itemsets purchased on that day. By selecting the entire week, the user can view the total sentiment for any given itemset.
 
-Additionally, the user can query to see in which itemsets a specific item appears via the text field at the top of the page. For example, typing '50' will red-fill any itemset bars that contain the item 50. 
+Additionally, the user can query to see in which itemsets a specific item appears via the text field at the top of the page. For example, typing '50' will red-fill any itemset bars that contain the item 50. This is especially useful for examing how often an item occurs in all of the itemsets set to display. It can also show if that item tends to be part of positively or negatively rated itemsets.
 
 The tooltips display on mouseover of the bar displays the item triple that the itemset represents.
 
 ######Scatterplot######
-The Scatterplot visualization, which can be found in the folder named as such, displays a point for every itemset purchased on a given day. The x-axis is the day of week and the y-axis is the total sentiment. This visualization enables to user to quickly determine whether the total sentiment for the itemsets purchased on a given day were more negative or more positive. Additionally, users can quickly determine the relative number of itemsets purchased on a given day. 
+The Scatterplot visualization, which can be found in the folder named as such, displays a point for every itemset purchased on a given day. The x-axis is the day of week and the y-axis is the total sentiment. This visualization enables the user to quickly determine whether the total sentiment for the itemsets purchased on a given day were more negative or more positive. Additionally, users can quickly determine the relative number of itemsets purchased on a given day. 
 
 ###Visualization Observations###
 In our Interactive Bar Chart visualization, we have observed that, in the beginning of the week, consumers typically leave negative reviews for purchases they make early in the week - specifically, Monday, Tuesday, and Wednesday. The total sentiment for any itemset purchased on one of these days is negative.
