@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>My project</title>
+        <script type="text/javascript" src="d3.v3.js"></script>
+        <link href="style.css" rel="stylesheet">
+    </head>
+	<body>
+        <h1> Total Sentiment per Frequent Itemset </h1>
+			<div>
+			<p> Show Highest Sentiment </p>
+			<input type="text" name="itemsets" id="highest">
+			<a onclick="refresh()" href="#">GO</a>
+			</div>
+        <svg class="chart"></svg>
+        <script type="text/javascript" src="script.js"></script>
+		
+    </body>
+
+    <script>
+    function refresh(){
+        location.reload();
+    }
+    </script>
+	
+	
+</html>
