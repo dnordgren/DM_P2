@@ -57,10 +57,10 @@ Additionally, the user can query to see in which itemsets a specific item appear
 The tooltips display on mouseover of the bar displays the item triple that the itemset represents.
 
 ######Scatterplot######
-
+The Scatterplot visualization, which can be found in the folder named as such, displays a point for every itemset purchased on a given day. The x-axis is the day of week and the y-axis is the total sentiment. This visualization enables to user to quickly determine whether the total sentiment for the itemsets purchased on a given day were more negative or more positive. Additionally, users can quickly determine the relative number of itemsets purchased on a given day. 
 
 ###Visualization Observations###
-Our Interactive Bar Chart visualization, we have observed that in the beginning of the week, consumers typically leave negative reviews for purchases they make early in the week - specifically, Monday, Tuesday, and Wednesday. The total sentiment for any itemset purchased on one of these days is negative.
+In our Interactive Bar Chart visualization, we have observed that, in the beginning of the week, consumers typically leave negative reviews for purchases they make early in the week - specifically, Monday, Tuesday, and Wednesday. The total sentiment for any itemset purchased on one of these days is negative.
 
 However, later in the week, consumers typically leave positive reviews for purchases they make. The total sentiment for any itemset purchased on Thursday, Friday, Saturday, or Sunday is positive.
 
