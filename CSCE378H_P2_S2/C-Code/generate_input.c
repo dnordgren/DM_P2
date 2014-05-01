@@ -18,7 +18,7 @@ int main(int argc, char **argv)
     
     char filename[1024];
     FILE *fp = NULL;
-    FILE *input = fopen("transactions.txt", "w");
+    FILE *input = fopen("transa.txt", "w");
 
     struct timeval time_start, time_end;
 
@@ -46,9 +46,13 @@ int main(int argc, char **argv)
             {
 	        max_id = bp->items[j].item_id;
             }
+            fprintf(input, "{");
             fprintf(input, "%i", bp->items[j].item_id);
-            fprintf(input, " ");
+            fprintf(input, ",");
+            fprintf(input, "%s", bp->items[j].review);
+            fprintf(input, "}");
         }
+	fprintf(input, "%s", bp->weekday);
 	fprintf(input, "\n");
 
         /* =========== end of data processing code ================ */
