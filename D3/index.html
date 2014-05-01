@@ -11,8 +11,25 @@
 			<div>
 			<p> Enter Item Number to See Containing Itemsets</p>
 			<input type="text" name="itemset" id="highest" value= "0">
-			<a onclick="refresh()" href="#">GO</a>
+			<input onclick="refresh()"  type="button" value="Go" >
 			</div>
+
+            <div>
+                <p> Select Days of Week to Display:</p>
+            <input type="checkbox" class="c" name="monday" id="monday" value="0" checked>Monday
+            <input type="checkbox" class="c" name="tuesday" id="tuesday" value="1" checked>Tuesday
+            <input type="checkbox" class="c" name="wednesday" id="wednesday" value="1" checked>Wednesday
+            <input type="checkbox" class="c" name="tuesday" id="thursday" value="1" checked>Thursday
+            <input type="checkbox" class="c" name="tuesday" id="friday" value="1" checked>Friday
+            <input type="checkbox" class="c" name="tuesday" id="saturday" value="1" checked>Saturday
+            <input type="checkbox" class="c" name="tuesday" id="sunday" value="1" checked>Sunday
+
+            <input onclick="checkUncheck(true);"  type="button" value="Check All Boxes" >
+            <input onclick="checkUncheck(false);"  type="button" value="Uncheck All Boxes" >
+
+            </div>
+
+
         <svg class="chart"></svg>
         <script type="text/javascript" src="script.js"></script>
 		
@@ -22,6 +39,17 @@
     function refresh(){
         location.reload();
     }
+
+    function checkUncheck(){ 
+  var w = document.getElementsByClassName('c'); 
+  for(var i = 0; i < w.length; i++){ 
+    if(w[i].type='checkbox'){ 
+      w[i].checked = arguments[0]; 
+    }; 
+  }; 
+}; 
+
+
     </script>
 	
 	
