@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <title>My project</title>
+        <script type="text/javascript" src="d3.v3.js"></script>
+        <link href="style.css" rel="stylesheet">
+    </head>
+	<body>
+        <h1> Total Sentiment per Frequent Itemset </h1>
+			<div>
+			<p> Enter Item Number to See Containing Itemsets</p>
+			<input type="text" name="itemset" id="highest" value= "0">
+			<input onclick="refresh()"  type="button" value="Go" >
+			</div>
+
+            <div>
+                <p> Select Days of Week to Display:</p>
+            <input type="checkbox" class="c" name="monday" id="monday" value="0" checked>Monday
+            <input type="checkbox" class="c" name="tuesday" id="tuesday" value="1" checked>Tuesday
+            <input type="checkbox" class="c" name="wednesday" id="wednesday" value="1" checked>Wednesday
+            <input type="checkbox" class="c" name="tuesday" id="thursday" value="1" checked>Thursday
+            <input type="checkbox" class="c" name="tuesday" id="friday" value="1" checked>Friday
+            <input type="checkbox" class="c" name="tuesday" id="saturday" value="1" checked>Saturday
+            <input type="checkbox" class="c" name="tuesday" id="sunday" value="1" checked>Sunday
+
+            <input onclick="checkUncheck(true);"  type="button" value="Check All Boxes" >
+            <input onclick="checkUncheck(false);"  type="button" value="Uncheck All Boxes" >
+
+            </div>
+
+
+        <svg class="chart"></svg>
+        <script type="text/javascript" src="script.js"></script>
+		
+    </body>
+
+    <script>
+    function refresh(){
+        location.reload();
+    }
+
+    function checkUncheck(){ 
+  var w = document.getElementsByClassName('c'); 
+  for(var i = 0; i < w.length; i++){ 
+    if(w[i].type='checkbox'){ 
+      w[i].checked = arguments[0]; 
+    }; 
+  }; 
+}; 
+
+
+    </script>
+	
+	
+</html>
