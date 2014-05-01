@@ -1,1 +1,4 @@
 *.dat
+/Apriori/nbproject/private/
+/Apriori/build/
+/Apriori/dist/
