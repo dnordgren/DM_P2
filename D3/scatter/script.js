@@ -1,4 +1,4 @@
-var margin = {top: 20, right: 20, bottom: 40, left: 20};
+var margin = {top: 20, right: 20, bottom: 40, left: 50};
 
 var height = 500 - margin.top - margin.bottom;
 var width = 960;
@@ -14,10 +14,15 @@ var chart = d3.select(".chart")
         .attr("height", height + margin.top + margin.bottom);
 //change? 
 var allgroup = chart.append("g")   
-        .attr("transform", "translate(" + margin.bottom + "," + margin.left + ")");
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     
 var tooltip = chart.append("text")
         .style("visibility", "hidden");   
+
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
 
 var xAxis = d3.svg.axis()
     .orient("bottom")
@@ -27,33 +32,30 @@ var xAxis = d3.svg.axis()
       return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d];
     });
 
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left");
-    
-
-var item = ((document.getElementById('highest').value));
-
 chart.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(20," + (y(0) + 20) + ")")
-      .call(xAxis)    
-.append("text")
-    .attr("transform", "rotate(0)")
-    .attr("y", 6)
-    .attr("x", 10)
-    .attr("dy", ".71em")
-    .style("text-anchor", "end")
-    .text("Itemset");
-
-
+      .attr("transform", "translate(50," + (460) + ")")
+      .call(xAxis); 
 d3.tsv("project_2_output.tsv", type, function(error, data) {
 
-  y.domain([d3.min(data, function(d) { return  Math.min(d.Monday, d.Tuesday, d.Wednesday, d.Thursday, d.Friday, d.Saturday, d.Sunday);}), 
-            d3.max(data, function(d) { return  Math.max(d.Monday, d.Tuesday, d.Wednesday, d.Thursday, d.Friday, d.Saturday, d.Sunday);})]);
+  // y.domain([d3.min(data, function(d) { return  Math.min(d.Monday, d.Tuesday, d.Wednesday, d.Thursday, d.Friday, d.Saturday, d.Sunday);}), 
+  //           d3.max(data, function(d) { return  Math.max(d.Monday, d.Tuesday, d.Wednesday, d.Thursday, d.Friday, d.Saturday, d.Sunday);})]);
 
-  console.log("Minimum" + d3.min(data, function(d) { return  Math.min(d.Monday, d.Tuesday, d.Wednesday, d.Thursday, d.Friday, d.Saturday, d.Sunday);}));
-  console.log("MAximum" + d3.max(data, function(d) { return  Math.max(d.Monday, d.Tuesday, d.Wednesday, d.Thursday, d.Friday, d.Saturday, d.Sunday);}));
+  y.domain([d3.min(data, function(d) { return  Math.min(d.sentiment);}), 
+            d3.max(data, function(d) { return  Math.max(d.sentiment);})]);
+
+  // console.log("Minimum" + d3.min(data, function(d) { return  Math.min(d.day);}));
+  // console.log("MAximum" + d3.max(data, function(d) { return  Math.max(d.day);}));
+
+
+// .append("text")
+//     .attr("transform", "rotate(0)")
+//     .attr("y", 6)
+//     .attr("x", 10)
+//     .attr("dy", ".71em")
+//     .style("text-anchor", "end");
+
+
 
   chart.append("g")
     .attr("class", "y axis")
@@ -69,25 +71,29 @@ d3.tsv("project_2_output.tsv", type, function(error, data) {
 	chart.attr("width", margin.left + barWidth * data.length);
 
   
-    console.log(j);
-    for(var j=0; j < 7; j++)
-    {
+    // console.log(j);
+    // for(var j=0; j < 7; j++)
+    // {
 
       var point = allgroup.selectAll("g")
       .data(data)
       .enter().append("g");
 
       point.append("circle")
-       .attr("cx", x(j))
-       .attr("cy", function(d, i, j){ console.log(getValue(d, j) +" "+ j); return y(getValue(d, j)); }  )
+       .attr("cx", function(d, i){  return x(d.day); }  )
+       //.attr("cy", function(d, i, j){ console.log(getValue(d, j) +" "+ j); return y(getValue(d, j)); }  )
+       .attr("cy", function(d, i){  return y(d.sentiment); }  )
+       .attr("visibility", function(d, i){  
+        return (d.sentiment == 0) ? "hidden" : "" })
+
        .attr("r", 5)
        //.attr("class", function(d){ return (    (d.Itemset).indexOf(" " +item +",") > -1 || (d.Itemset).indexOf("(" + item + ",") > -1 || (d.Itemset).indexOf(" " + item + ")")) > -1 ? "queried" : "" })
        //.style("fill", function(d){ return (    (d.Itemset).indexOf(" " +item +",") > -1 || (d.Itemset).indexOf("(" + item + ",") > -1 || (d.Itemset).indexOf(" " + item + ")")) > -1 ? "red" : "steelblue" })       
 
        .on("mouseover", function(d, i){
         d3.select(this).style("fill", "orange");
-        var tipx =  x(d.Monday); 
-        var tipy =  y(d.Monday); 
+        var tipx =  x(d.day); 
+        var tipy =  y(d.sentiment); 
         tooltip.attr("y", tipy);      
         tooltip.attr("x", tipx);
         tooltip.attr("dx", 60);
@@ -98,9 +104,15 @@ d3.tsv("project_2_output.tsv", type, function(error, data) {
         })
 
         .on("mouseout", function(){
-        d3.select(this).style("fill", "steelblue");
-        tooltip.style("visibility", "hidden");});
-    }
+            if(d3.select(this).attr("class") == "queried"){
+                d3.select(this).style("fill", "red");
+            } else {
+                //console.log(d3.select(this).attr("class"));
+                d3.select(this).style("fill", "steelblue");
+
+            }
+            tooltip.style("visibility", "hidden");});
+   // }
 });
 
 
@@ -147,13 +159,8 @@ d3.tsv("project_2_output.tsv", type, function(error, data) {
 // });
 
 function type(d) {
-	d.Monday = +d.Monday;
-    d.Tuesday = +d.Tuesday;
-    d.Wednesday = +d.Wednesday;
-    d.Thursday = +d.Thursday;
-    d.Friday = +d.Friday;
-    d.Saturday = +d.Saturday;
-    d.Sunday = +d.Sunday;
+    d.day = +d.day;
+    d.sentiment = +d.sentiment;
 	return d;
 }
 
@@ -161,15 +168,15 @@ function type(d) {
     return yScale(0);
   }
 
-function getValue(d, i) {
-  switch(i) {
-    case(0) : return d.Sunday;
-    case(1) : return d.Monday;
-    case(2) : return d.Tuesday;
-    case(3) : return d.Wednesday;
-    case(4) : return d.Thursday;
-    case(5) : return d.Friday;
-    case(6) : return d.Saturday;
-  }
+// function getValue(d, i) {
+//   switch(i) {
+//     case(0) : return d.Sunday;
+//     case(1) : return d.Monday;
+//     case(2) : return d.Tuesday;
+//     case(3) : return d.Wednesday;
+//     case(4) : return d.Thursday;
+//     case(5) : return d.Friday;
+//     case(6) : return d.Saturday;
+//   }
 
-}
+// }
