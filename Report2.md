@@ -5,13 +5,28 @@ _Sawyer Jager, Rees Klintworth, Derek Nordgren, Brad Steiner_
 
 CSCE 378H: Data Modeling - For Dr. Yu - 5.1.2014
 
-###How to use###
-
 ###Data Representation###
-######Data Model######
+######Input file######
+_Apriori/transactions.txt_
 
-######Strategy######
+Sample format: 
 
+	{116,excellence captivated excuse intelligent playful underestimate damned missed lame disputing greed disgusted mourning panicked cruelty intimidated }{186,tender boosting growing failed drunk alarmed charged cheater }{136,rapturous apologised inaction sulking barrier hurts exploits }{477,weird vested welcomes melancholy retarded liar troubled hysterics misgiving }{568,genial absentee huge astonished empathetic hahaha bereave murders dishonest offends treason loathing interrupted greenwashers disasters }{627,promoted unified tout steal nonsense stressor }Monday
+
+Each line of the file represents one transaction. A { } block represents one item and the associated customer reviews for that item purchase. The day of purchase is displayed at the end of the line.
+
+Transactions were output in this format so as to minimize the implementation effort of computing total sentiment for itemsets. Items could be easily tokenized from the line, from which sentiment values could be also easily tokenized and compared to a hashmap to compute total sentiment.
+
+######Output file######
+_Apriori/project_2_output.txt_
+
+Sample format:
+
+	(143, 19, 876) 54 0 -44 -47 0 0 0
+	
+Each line of this file represents one itemset. The ( ) block represents the items that are the parts of the itemset. The following seven integers represent the total sentiment of the itemset for each day of the week, Sunday - Saturday.
+
+Storing the per day total sentiments in this format enabled more convenient querying of the sentiments by itemset and/or by day in our visualization scripts.
 
 ###Processing Time###
 Our input file (generated in C) takes less than one second to generate.
